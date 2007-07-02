@@ -1,22 +1,22 @@
 class SmsNotifier
   
   def initialize(project = nil)
-    @phones = ['555-555-5555']#eventually, this will be configureable
+    @phones = ['xxx-xxx-xxxx']#eventually, this will be configureable
   end
 
   def build_finished(build)
     return if @phones.empty? or not build.failed?
-    notify "#{build.project.name} build #{build.label} failed"
+    notify "#{build.project.name} build #{build.label} failed", build.project.name
   end
 
   def build_fixed(build, previous_build)
     return if @phones.empty?
-    notify "#{build.project.name} build #{build.label} fixed"
+    notify "#{build.project.name} build #{build.label} fixed", build.project.name
   end
   
   private
-	def notify(message)
-		sms = Sms.new('cruise@thoughtworks.com', "Cruise Status: #{build.project.name}", message, @phones)
+	def notify(message, project)
+		sms = Sms.new('cruise@thoughtworks.com', "Cruise Status: #{project}", message, @phones)
 		sms.post_message()
 	end
   
@@ -48,7 +48,8 @@ class Sms
 	def post_message()
 		@recipients.each do |recipient|
     	message = "From: <#{@sender}>\nTo: <#{recipient}@teleflip.com>\nSubject: #{@subject}\n\n#{@message}"
-    	Net::SMTP.start('xxxxxx.thoughtworks.com', 25) do |smtp|
+			smtp = Net::SMTP.new("smtp.gmail.com", 587)
+    	smtp.start("thoughtworks.com", "user", "pass", :plain) do |smtp|
   			smtp.send_message(message , @sender, "#{recipient}@teleflip.com")
     	end
 		end
