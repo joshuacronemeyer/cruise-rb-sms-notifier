@@ -24,7 +24,7 @@ end
 
 class Sms
 
-  MESSAGE_MAX = 160
+  Sms::MESSAGE_MAX = 160
 
   def initialize(sender, subject, message, recipients)
     @sender=sender
