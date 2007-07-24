@@ -1,0 +1,4 @@
+You need to add the following lines to your project's cruise_config.rb in order to recieve sms.
+
+#sms_notifier configuration
+project.sms_notifier.recipients = ['555-555-5555']

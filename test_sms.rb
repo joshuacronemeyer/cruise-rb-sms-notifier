@@ -1,13 +1,26 @@
 require 'test/unit'
 require 'project'
 require 'sms_notifier'
+require 'rubygems'
+require 'net/smtp'
+require 'mocha'
+require 'action_mailer'
 
 class Test_Sms < Test::Unit::TestCase
   def setup
+    smtp_settings = {:address =>"smtp.gmail.com",
+                      :port =>           587,
+                      :domain =>         "thoughtworks.com",
+                      :authentication => :plain,
+                      :user_name =>      "user",
+                      :password =>       "pass"}
+    ActionMailer::Base.expects(:smtp_settings).times(0..7).returns(smtp_settings)
+    CruiseControl::Log.expects(:event).times(0..1)
     @sms_sender = "sender"
     @sms_subject = "subject"
     @sms_message = "message"
-    @sms = Sms.new(@sms_sender, @sms_subject,@sms_message,"recipients")
+    @sms_recipients = "recipients"
+    @sms = Sms.new(@sms_sender, @sms_subject,@sms_message,@sms_recipients)
     @empty_sms = Sms.new("","","","")
   end
   
@@ -28,6 +41,18 @@ class Test_Sms < Test::Unit::TestCase
   def test_message_size_doesnt_change_for_message_size_smaller_than_max
     small_sms = Sms.new("","",message_of_length(1),"")
     assert_equal(1, small_sms.size_is)
+  end
+  
+  def test_we_can_post_message
+    smtp = @sms.smtp
+    smtp.expects(:start).with("thoughtworks.com", "user", "pass", :plain)
+    @sms.post_message()
+  end
+  
+  def test_we_post_correct_message
+    message = "From: <#{@sms_sender}>\nTo: <#{@sms_recipients}@teleflip.com>\nSubject: #{@sms_subject}\n\n#{@sms_message}"
+    @sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message)
+    @sms.post_message()
   end
   
   private
