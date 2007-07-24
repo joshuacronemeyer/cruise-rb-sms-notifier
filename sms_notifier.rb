@@ -35,7 +35,7 @@ class Sms
                            ActionMailer::Base.smtp_settings[:port])
     @sender=sender
   	@subject=subject
-  	@recipients=recipients
+  	@recipients=recipients.map{|x| x.gsub(/\D/,'')}
   	@message=message
   	limit_message_size()
   end
@@ -57,7 +57,7 @@ class Sms
       begin
 			smtp_send(ActionMailer::Base.smtp_settings[:domain], 
                 ActionMailer::Base.smtp_settings[:user_name],
-                ActionMailer::Base.smtp_settings[:password], message)
+                ActionMailer::Base.smtp_settings[:password], message, recipient)
       CruiseControl::Log.event("Sent sms to #{@recipients.size == 1 ? '1 person' : '#{@recipients.size} people'}", :debug)
       rescue OpenSSL::SSL::SSLError => e
         CruiseControl::Log.event('SSLError: perhaps the smtp server disconnected prematurely... ' + 
@@ -76,7 +76,7 @@ class Sms
   	Net::SMTP.new(server, port)
 	end
 	
-	def smtp_send(domain, user, pass, message)
+	def smtp_send(domain, user, pass, message, recipient)
     @smtp.start(domain, user, pass, :plain) do |smtp|
       smtp.send_message(message , @sender, "#{recipient}@teleflip.com")
     end
