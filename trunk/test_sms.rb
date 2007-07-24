@@ -14,12 +14,12 @@ class Test_Sms < Test::Unit::TestCase
                       :authentication => :plain,
                       :user_name =>      "user",
                       :password =>       "pass"}
-    ActionMailer::Base.expects(:smtp_settings).times(0..7).returns(smtp_settings)
-    CruiseControl::Log.expects(:event).times(0..1)
+    ActionMailer::Base.expects(:smtp_settings).times(0..20).returns(smtp_settings)
+    CruiseControl::Log.expects(:event).times(0..10)
     @sms_sender = "sender"
     @sms_subject = "subject"
     @sms_message = "message"
-    @sms_recipients = "recipients"
+    @sms_recipients = ["1111111111"]
     @sms = Sms.new(@sms_sender, @sms_subject,@sms_message,@sms_recipients)
     @empty_sms = Sms.new("","","","")
   end
@@ -51,8 +51,26 @@ class Test_Sms < Test::Unit::TestCase
   
   def test_we_post_correct_message
     message = "From: <#{@sms_sender}>\nTo: <#{@sms_recipients}@teleflip.com>\nSubject: #{@sms_subject}\n\n#{@sms_message}"
-    @sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message)
+    @sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message, @sms_recipients.first)
     @sms.post_message()
+  end
+
+  def test_we_post_to_correct_recipients
+    sms_recipients = ['111-111-1111', '222.222.2222']
+    sms = Sms.new(@sms_sender, @sms_subject,@sms_message,sms_recipients)
+    message = "From: <#{@sms_sender}>\nTo: <1111111111@teleflip.com>\nSubject: #{@sms_subject}\n\n#{@sms_message}"
+    sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message, '1111111111')
+    message = "From: <#{@sms_sender}>\nTo: <2222222222@teleflip.com>\nSubject: #{@sms_subject}\n\n#{@sms_message}"
+    sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message, '2222222222')
+    sms.post_message() 
+  end
+ 
+  def test_non_numeric_characters_get_stripped_in_recipients
+    sms_recipients = ['111-111-1111']
+    sms = Sms.new(@sms_sender, @sms_subject,@sms_message,sms_recipients)
+    message = "From: <#{@sms_sender}>\nTo: <1111111111@teleflip.com>\nSubject: #{@sms_subject}\n\n#{@sms_message}"
+    sms.expects(:smtp_send).with("thoughtworks.com", "user", "pass", message, '1111111111')
+    sms.post_message()
   end
   
   private
