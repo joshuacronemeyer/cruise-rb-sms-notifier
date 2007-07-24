@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'project'
+require 'cruise_stubs'
 require 'sms_notifier'
 require 'rubygems'
 require 'net/smtp'
