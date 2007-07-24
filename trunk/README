@@ -1,4 +1,14 @@
-You need to add the following lines to your project's cruise_config.rb in order to recieve sms.
+This is a cruisecontrol.rb plugin for sending build status changes to your cell phone.  
 
-#sms_notifier configuration
-project.sms_notifier.recipients = ['555-555-5555']
+Steps to install:
+1. Drop the sms_notifier.rb file into the builder_plugins/installed directory of your cruise instance
+
+2. Add the following lines to your project's cruise_config.rb.  This is a list.  Add as many as you like.
+  #sms_notifier configuration
+  project.sms_notifier.recipients = ['555-555-5555']
+
+3. Make sure you have the smtp configuration setup in your site_config.rb file.  The sms is sent via email.
+
+Note.  This plugin makes use of the teleflip.com 'flipout' service which allows sms to be sent via email.  I have read their license pretty closely, and as long as you aren't adding recipients to be notified without their consent you are not violating the terms of service.  However I am no lawyer, so I might be wrong.  You must go read and agree to teleflip.com terms of service before you can use this plugin!
+
+Enjoy.
