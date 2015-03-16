@@ -1,0 +1,1 @@
+This is a plugin for Cruise Control.rb that sends sms notifications of build status changes.
